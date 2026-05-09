@@ -9,7 +9,10 @@ class PasswordsController < ApplicationController
   def create
     if user = User.find_by(email_address: params[:email_address])
       begin
-        if Rails.env.production? && (ENV["SMTP_USER"].blank? || ENV["SMTP_PASS"].blank?)
+        smtp_user = ENV["SMTP_USER"].to_s.strip
+        smtp_password = ENV["SMTP_PASS"].to_s.delete(" ").strip
+
+        if Rails.env.production? && (smtp_user.blank? || smtp_password.blank?)
           raise "SMTP no configurado en entorno de produccion"
         end
 
