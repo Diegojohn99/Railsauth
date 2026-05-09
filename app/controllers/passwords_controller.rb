@@ -11,12 +11,25 @@ class PasswordsController < ApplicationController
       begin
         smtp_user = ENV["SMTP_USER"].to_s.strip
         smtp_password = ENV["SMTP_PASS"].to_s.delete(" ").strip
+        smtp_provider = ENV["SMTP_PROVIDER"].to_s.downcase
 
         if Rails.env.production? && (smtp_user.blank? || smtp_password.blank?)
           raise "SMTP no configurado en entorno de produccion"
         end
 
-        if Rails.env.production?
+        if Rails.env.production? && smtp_provider == "brevo" && ENV["BREVO_API_KEY"].to_s.strip.present?
+          sent, brevo_error = BrevoEmailClient.deliver_password_reset(
+            user: user,
+            reset_url: edit_password_url(token: user.password_reset_token)
+          )
+
+          if sent
+            redirect_to new_session_path, notice: "Correo de recuperacion enviado. Revisa tu bandeja de entrada."
+          else
+            Rails.logger.error("Brevo API fallo en controller: #{brevo_error}")
+            redirect_to new_password_path, alert: "No se pudo enviar el correo por Brevo. Revisa SMTP_FROM y BREVO_API_KEY."
+          end
+        elsif Rails.env.production?
           SendPasswordResetEmailJob.perform_later(user.id)
           redirect_to new_session_path, notice: "Correo de recuperacion en proceso. Revisa tu bandeja en unos segundos."
         else

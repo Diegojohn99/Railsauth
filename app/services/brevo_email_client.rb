@@ -1,5 +1,6 @@
 require "json"
 require "net/http"
+require "securerandom"
 
 class BrevoEmailClient
   API_URL = URI("https://api.brevo.com/v3/smtp/email")
@@ -17,6 +18,9 @@ class BrevoEmailClient
         email: sender_email
       },
       to: [ { email: user.email_address } ],
+      headers: {
+        "X-Reset-Request-Id" => SecureRandom.uuid
+      },
       subject: "Restablece tu contrasena - RailsAuth",
       htmlContent: <<~HTML,
         <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #1f2937; max-width: 560px; margin: 0 auto; padding: 24px;">
