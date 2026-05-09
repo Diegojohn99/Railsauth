@@ -29,6 +29,20 @@ class PasswordsController < ApplicationController
         when Net::SMTPAuthenticationError
           "Error SMTP: usuario o app password incorrectos."
         when Net::OpenTimeout, Net::ReadTimeout, Timeout::Error
+          if ENV["SMTP_PROVIDER"].to_s.downcase == "brevo"
+            sent, brevo_error = BrevoEmailClient.deliver_password_reset(
+              user: user,
+              reset_url: edit_password_url(token: user.password_reset_token)
+            )
+
+            if sent
+              redirect_to new_session_path, notice: "Correo de recuperacion enviado. Revisa tu bandeja de entrada."
+              return
+            end
+
+            Rails.logger.error("Fallback Brevo API fallo: #{brevo_error}")
+          end
+
           "Error SMTP: timeout de conexion. En Render, usa proveedor SMTP transaccional (SMTP_PROVIDER=brevo)."
         when SocketError
           "Error SMTP: no se pudo resolver el servidor de correo."
