@@ -64,6 +64,9 @@ Rails.application.configure do
     host: ENV.fetch("APP_HOST", "localhost"),
     protocol: "https"
   }
+  config.action_mailer.default_options = {
+    from: ENV.fetch("SMTP_FROM", ENV.fetch("SMTP_USER", "no-reply@example.com"))
+  }
 
   if ENV["SMTP_USER"].present? && ENV["SMTP_PASS"].present?
     config.action_mailer.delivery_method = :smtp
@@ -74,7 +77,7 @@ Rails.application.configure do
       domain: ENV.fetch("SMTP_DOMAIN", "gmail.com"),
       user_name: ENV["SMTP_USER"],
       password: ENV["SMTP_PASS"],
-      authentication: ENV.fetch("SMTP_AUTH", "plain"),
+      authentication: ENV.fetch("SMTP_AUTH", "login"),
       enable_starttls_auto: true
     }
   else
