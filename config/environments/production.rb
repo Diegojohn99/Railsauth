@@ -68,10 +68,17 @@ Rails.application.configure do
     from: ENV.fetch("SMTP_FROM", ENV.fetch("SMTP_USER", "no-reply@example.com"))
   }
 
+  smtp_provider = ENV.fetch("SMTP_PROVIDER", "gmail").downcase
+  default_smtp_address = smtp_provider == "brevo" ? "smtp-relay.brevo.com" : "smtp.gmail.com"
+  default_smtp_port = smtp_provider == "brevo" ? "587" : "465"
+  default_smtp_domain = smtp_provider == "brevo" ? "smtp-brevo.com" : "gmail.com"
+  default_smtp_auth = "login"
+  default_smtp_tls = smtp_provider == "brevo" ? "false" : "true"
+
   smtp_user = ENV["SMTP_USER"].to_s.strip
   smtp_password = ENV["SMTP_PASS"].to_s.delete(" ").strip
-  smtp_port = ENV.fetch("SMTP_PORT", "587").to_i
-  smtp_tls = ENV.fetch("SMTP_TLS", smtp_port == 465 ? "true" : "false") == "true"
+  smtp_port = ENV.fetch("SMTP_PORT", default_smtp_port).to_i
+  smtp_tls = ENV.fetch("SMTP_TLS", default_smtp_tls) == "true"
   smtp_open_timeout = ENV.fetch("SMTP_OPEN_TIMEOUT", "30").to_i
   smtp_read_timeout = ENV.fetch("SMTP_READ_TIMEOUT", "30").to_i
 
@@ -80,12 +87,12 @@ Rails.application.configure do
     config.action_mailer.smtp_timeout = [smtp_open_timeout, smtp_read_timeout].min
     config.action_mailer.perform_deliveries = true
     config.action_mailer.smtp_settings = {
-      address: ENV.fetch("SMTP_ADDRESS", "smtp.gmail.com"),
+      address: ENV.fetch("SMTP_ADDRESS", default_smtp_address),
       port: smtp_port,
-      domain: ENV.fetch("SMTP_DOMAIN", "gmail.com"),
+      domain: ENV.fetch("SMTP_DOMAIN", default_smtp_domain),
       user_name: smtp_user,
       password: smtp_password,
-      authentication: ENV.fetch("SMTP_AUTH", "login"),
+      authentication: ENV.fetch("SMTP_AUTH", default_smtp_auth),
       enable_starttls_auto: !smtp_tls,
       tls: smtp_tls,
       ssl: smtp_tls,

@@ -20,16 +20,18 @@ services:
         value: "2"
       - key: APP_HOST
         sync: false
+      - key: SMTP_PROVIDER
+        value: brevo
       - key: SMTP_ADDRESS
-        value: smtp.gmail.com
+        value: smtp-relay.brevo.com
       - key: SMTP_PORT
-        value: "465"
+        value: "587"
       - key: SMTP_DOMAIN
-        value: gmail.com
+        value: smtp-brevo.com
       - key: SMTP_AUTH
         value: login
       - key: SMTP_TLS
-        value: "true"
+        value: "false"
       - key: SMTP_OPEN_TIMEOUT
         value: "30"
       - key: SMTP_READ_TIMEOUT

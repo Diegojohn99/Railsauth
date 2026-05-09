@@ -104,3 +104,25 @@ Pasos:
 2. En Render, crea un servicio desde el repo.
 3. Carga variables de entorno necesarias (`SECRET_KEY_BASE`, SMTP y DB).
 4. Ejecuta deploy.
+
+### SMTP recomendado en Render (practico)
+
+Para evitar timeouts con Gmail SMTP desde Render, usa Brevo como proveedor transaccional.
+
+Variables recomendadas en Render:
+
+```env
+SMTP_PROVIDER=brevo
+SMTP_ADDRESS=smtp-relay.brevo.com
+SMTP_PORT=587
+SMTP_DOMAIN=smtp-brevo.com
+SMTP_AUTH=login
+SMTP_TLS=false
+SMTP_OPEN_TIMEOUT=30
+SMTP_READ_TIMEOUT=30
+SMTP_USER=<tu_login_brevo>
+SMTP_PASS=<tu_smtp_key_brevo>
+SMTP_FROM=<sender_verificado_en_brevo>
+```
+
+Con esta configuracion, puedes enviar correos de recuperacion a cualquier destinatario Gmail.
