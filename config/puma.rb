@@ -28,6 +28,10 @@
 threads_count = ENV.fetch("RAILS_MAX_THREADS", 3)
 threads threads_count, threads_count
 
+# Render free tier: run in single-mode to minimize memory overhead and boot latency.
+workers_count = ENV.fetch("WEB_CONCURRENCY", ENV.fetch("RENDER_FREE_MODE", "false") == "true" ? 0 : 1).to_i
+workers workers_count if workers_count.positive?
+
 # Specifies the `port` that Puma will listen on to receive requests; default is 3000.
 port ENV.fetch("PORT", 3000)
 
