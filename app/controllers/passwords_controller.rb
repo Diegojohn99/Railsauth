@@ -16,9 +16,14 @@ class PasswordsController < ApplicationController
           raise "SMTP no configurado en entorno de produccion"
         end
 
-        # Password reset is a critical path: deliver synchronously so errors are visible.
-        UserMailer.reset_password(user).deliver_now
-        redirect_to new_session_path, notice: "Correo de recuperacion enviado. Revisa tu bandeja de entrada."
+        if Rails.env.production?
+          SendPasswordResetEmailJob.perform_later(user.id)
+          redirect_to new_session_path, notice: "Correo de recuperacion en proceso. Revisa tu bandeja en unos segundos."
+        else
+          # In local/dev keep synchronous delivery for easier debugging.
+          UserMailer.reset_password(user).deliver_now
+          redirect_to new_session_path, notice: "Correo de recuperacion enviado. Revisa tu bandeja de entrada."
+        end
       rescue StandardError => e
         Rails.logger.error(
           "Error enviando recuperacion: #{e.class} - #{e.message} " \
@@ -29,20 +34,6 @@ class PasswordsController < ApplicationController
         when Net::SMTPAuthenticationError
           "Error SMTP: usuario o app password incorrectos."
         when Net::OpenTimeout, Net::ReadTimeout, Timeout::Error
-          if ENV["SMTP_PROVIDER"].to_s.downcase == "brevo"
-            sent, brevo_error = BrevoEmailClient.deliver_password_reset(
-              user: user,
-              reset_url: edit_password_url(token: user.password_reset_token)
-            )
-
-            if sent
-              redirect_to new_session_path, notice: "Correo de recuperacion enviado. Revisa tu bandeja de entrada."
-              return
-            end
-
-            Rails.logger.error("Fallback Brevo API fallo: #{brevo_error}")
-          end
-
           "Error SMTP: timeout de conexion. En Render, usa proveedor SMTP transaccional (SMTP_PROVIDER=brevo)."
         when SocketError
           "Error SMTP: no se pudo resolver el servidor de correo."

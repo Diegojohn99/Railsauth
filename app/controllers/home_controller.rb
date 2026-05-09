@@ -28,6 +28,11 @@ class HomeController < ApplicationController
           title: "Variables de entorno sensibles",
           ok: smtp_env_present?,
           detail: "SMTP_USER y SMTP_PASS estan disponibles en el entorno actual."
+        },
+        {
+          title: "Brevo API fallback listo",
+          ok: brevo_fallback_ready?,
+          detail: "Si SMTP tarda, se usa la API HTTPS de Brevo (BREVO_API_KEY + SMTP_FROM)."
         }
       ]
     end
@@ -42,6 +47,8 @@ class HomeController < ApplicationController
     @users_with_digest_count = stats[:users_with_digest_count]
     @users_total_count = stats[:users_total_count]
     @recent_users = User.order(created_at: :desc).limit(5)
+    @smtp_provider = ENV.fetch("SMTP_PROVIDER", "gmail")
+    @mail_async_in_production = true
   end
 
   private
@@ -67,5 +74,11 @@ class HomeController < ApplicationController
 
     def smtp_env_present?
       ENV["SMTP_USER"].present? && ENV["SMTP_PASS"].present?
+    end
+
+    def brevo_fallback_ready?
+      return false unless ENV.fetch("SMTP_PROVIDER", "").downcase == "brevo"
+
+      ENV["BREVO_API_KEY"].present? && ENV["SMTP_FROM"].present?
     end
 end
