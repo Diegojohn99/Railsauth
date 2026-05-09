@@ -70,20 +70,27 @@ Rails.application.configure do
 
   smtp_user = ENV["SMTP_USER"].to_s.strip
   smtp_password = ENV["SMTP_PASS"].to_s.delete(" ").strip
+  smtp_port = ENV.fetch("SMTP_PORT", "587").to_i
+  smtp_tls = ENV.fetch("SMTP_TLS", smtp_port == 465 ? "true" : "false") == "true"
+  smtp_open_timeout = ENV.fetch("SMTP_OPEN_TIMEOUT", "30").to_i
+  smtp_read_timeout = ENV.fetch("SMTP_READ_TIMEOUT", "30").to_i
 
   if smtp_user.present? && smtp_password.present?
     config.action_mailer.delivery_method = :smtp
-    config.action_mailer.smtp_timeout = 5
+    config.action_mailer.smtp_timeout = [smtp_open_timeout, smtp_read_timeout].min
+    config.action_mailer.perform_deliveries = true
     config.action_mailer.smtp_settings = {
       address: ENV.fetch("SMTP_ADDRESS", "smtp.gmail.com"),
-      port: ENV.fetch("SMTP_PORT", 587).to_i,
+      port: smtp_port,
       domain: ENV.fetch("SMTP_DOMAIN", "gmail.com"),
       user_name: smtp_user,
       password: smtp_password,
       authentication: ENV.fetch("SMTP_AUTH", "login"),
-      enable_starttls_auto: true,
-      open_timeout: 10,
-      read_timeout: 10
+      enable_starttls_auto: !smtp_tls,
+      tls: smtp_tls,
+      ssl: smtp_tls,
+      open_timeout: smtp_open_timeout,
+      read_timeout: smtp_read_timeout
     }
   else
     config.action_mailer.delivery_method = :test

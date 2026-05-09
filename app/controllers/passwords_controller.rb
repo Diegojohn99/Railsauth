@@ -29,7 +29,7 @@ class PasswordsController < ApplicationController
         when Net::SMTPAuthenticationError
           "Error SMTP: usuario o app password incorrectos."
         when Net::OpenTimeout, Net::ReadTimeout, Timeout::Error
-          "Error SMTP: timeout de conexion con el servidor de correo."
+          "Error SMTP: timeout de conexion. Prueba SMTP_PORT=465 y SMTP_TLS=true en Render."
         when SocketError
           "Error SMTP: no se pudo resolver el servidor de correo."
         else
