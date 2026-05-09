@@ -9,8 +9,16 @@ services:
     envVars:
       - key: RAILS_ENV
         value: production
+      - key: RACK_ENV
+        value: production
       - key: RAILS_SERVE_STATIC_FILES
         value: "true"
+      - key: RENDER_FREE_MODE
+        value: "true"
+      - key: WEB_CONCURRENCY
+        value: "1"
+      - key: RAILS_MAX_THREADS
+        value: "3"
       - key: APP_HOST
         sync: false
       - key: SMTP_ADDRESS
