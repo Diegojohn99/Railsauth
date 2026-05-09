@@ -9,7 +9,9 @@ class PasswordsController < ApplicationController
   def create
     if user = User.find_by(email_address: params[:email_address])
       begin
-        UserMailer.reset_password(user).deliver_now
+        mail = UserMailer.reset_password(user)
+        # In production, enqueue to avoid blocking the HTTP response on SMTP latency.
+        Rails.env.production? ? mail.deliver_later : mail.deliver_now
         redirect_to new_session_path, notice: "Correo de recuperacion enviado. Revisa tu bandeja de entrada."
       rescue StandardError => e
         Rails.logger.error("Error enviando recuperacion: #{e.class} - #{e.message}")

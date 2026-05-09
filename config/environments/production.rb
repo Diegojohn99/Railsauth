@@ -67,6 +67,7 @@ Rails.application.configure do
 
   if ENV["SMTP_USER"].present? && ENV["SMTP_PASS"].present?
     config.action_mailer.delivery_method = :smtp
+    config.action_mailer.smtp_timeout = 5
     config.action_mailer.smtp_settings = {
       address: ENV.fetch("SMTP_ADDRESS", "smtp.gmail.com"),
       port: ENV.fetch("SMTP_PORT", 587),
