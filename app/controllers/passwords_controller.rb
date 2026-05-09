@@ -20,8 +20,23 @@ class PasswordsController < ApplicationController
         UserMailer.reset_password(user).deliver_now
         redirect_to new_session_path, notice: "Correo de recuperacion enviado. Revisa tu bandeja de entrada."
       rescue StandardError => e
-        Rails.logger.error("Error enviando recuperacion: #{e.class} - #{e.message}")
-        redirect_to new_password_path, alert: "No se pudo enviar el correo de recuperacion. Intenta nuevamente."
+        Rails.logger.error(
+          "Error enviando recuperacion: #{e.class} - #{e.message} " \
+          "(smtp_user_present=#{smtp_user.present?}, smtp_from_present=#{ENV['SMTP_FROM'].to_s.strip.present?})"
+        )
+
+        user_message = case e
+        when Net::SMTPAuthenticationError
+          "Error SMTP: usuario o app password incorrectos."
+        when Net::OpenTimeout, Net::ReadTimeout, Timeout::Error
+          "Error SMTP: timeout de conexion con el servidor de correo."
+        when SocketError
+          "Error SMTP: no se pudo resolver el servidor de correo."
+        else
+          "No se pudo enviar el correo de recuperacion. Intenta nuevamente."
+        end
+
+        redirect_to new_password_path, alert: user_message
       end
       return
     end
