@@ -58,20 +58,25 @@ Rails.application.configure do
 
   # Host and protocol used by mailer links in production.
   config.action_mailer.default_url_options = {
-    host: ENV.fetch("APP_HOST"),
+    host: ENV.fetch("APP_HOST", "localhost"),
     protocol: "https"
   }
 
-  config.action_mailer.delivery_method = :smtp
-  config.action_mailer.smtp_settings = {
-    address: ENV.fetch("SMTP_ADDRESS", "smtp.gmail.com"),
-    port: ENV.fetch("SMTP_PORT", 587),
-    domain: ENV.fetch("SMTP_DOMAIN", "localhost"),
-    user_name: ENV.fetch("SMTP_USER"),
-    password: ENV.fetch("SMTP_PASS"),
-    authentication: ENV.fetch("SMTP_AUTH", "plain"),
-    enable_starttls_auto: true
-  }
+  if ENV["SMTP_USER"].present? && ENV["SMTP_PASS"].present?
+    config.action_mailer.delivery_method = :smtp
+    config.action_mailer.smtp_settings = {
+      address: ENV.fetch("SMTP_ADDRESS", "smtp.gmail.com"),
+      port: ENV.fetch("SMTP_PORT", 587),
+      domain: ENV.fetch("SMTP_DOMAIN", "gmail.com"),
+      user_name: ENV["SMTP_USER"],
+      password: ENV["SMTP_PASS"],
+      authentication: ENV.fetch("SMTP_AUTH", "plain"),
+      enable_starttls_auto: true
+    }
+  else
+    config.action_mailer.delivery_method = :test
+    config.action_mailer.perform_deliveries = false
+  end
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).
