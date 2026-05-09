@@ -1,5 +1,6 @@
 Rails.application.routes.draw do
   root "home#index"
+  get "ping", to: proc { [200, { "Content-Type" => "text/plain" }, ["pong"]] }
 
   resource :registration, only: %i[new create]
   resource :session
