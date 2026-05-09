@@ -8,10 +8,17 @@ class PasswordsController < ApplicationController
 
   def create
     if user = User.find_by(email_address: params[:email_address])
-      UserMailer.reset_password(user).deliver_later
+      begin
+        UserMailer.reset_password(user).deliver_now
+        redirect_to new_session_path, notice: "Correo de recuperacion enviado. Revisa tu bandeja de entrada."
+      rescue StandardError => e
+        Rails.logger.error("Error enviando recuperacion: #{e.class} - #{e.message}")
+        redirect_to new_password_path, alert: "No se pudo enviar el correo de recuperacion. Intenta nuevamente."
+      end
+      return
     end
 
-    redirect_to new_session_path, notice: "Password reset instructions sent (if user with that email address exists)."
+    redirect_to new_session_path, notice: "Si existe una cuenta con ese correo, recibiras instrucciones para recuperar tu contrasena."
   end
 
   def edit

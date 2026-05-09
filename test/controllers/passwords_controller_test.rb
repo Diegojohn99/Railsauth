@@ -9,21 +9,23 @@ class PasswordsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "create" do
-    post passwords_path, params: { email_address: @user.email_address }
-    assert_enqueued_email_with UserMailer, :reset_password, args: [ @user ]
+    assert_emails 1 do
+      post passwords_path, params: { email_address: @user.email_address }
+    end
     assert_redirected_to new_session_path
 
     follow_redirect!
-    assert_notice "reset instructions sent"
+    assert_notice "Correo de recuperacion enviado"
   end
 
   test "create for an unknown user redirects but sends no mail" do
-    post passwords_path, params: { email_address: "missing-user@example.com" }
-    assert_enqueued_emails 0
+    assert_emails 0 do
+      post passwords_path, params: { email_address: "missing-user@example.com" }
+    end
     assert_redirected_to new_session_path
 
     follow_redirect!
-    assert_notice "reset instructions sent"
+    assert_notice "Si existe una cuenta"
   end
 
   test "edit" do
@@ -62,6 +64,6 @@ class PasswordsControllerTest < ActionDispatch::IntegrationTest
 
   private
     def assert_notice(text)
-      assert_select "div", /#{text}/
+      assert_match(/#{text}/, response.body)
     end
 end

@@ -10,6 +10,20 @@ services:
         value: production
       - key: RAILS_SERVE_STATIC_FILES
         value: "true"
+      - key: APP_HOST
+        sync: false
+      - key: SMTP_ADDRESS
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_DOMAIN
+        sync: false
+      - key: SMTP_AUTH
+        value: plain
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
       - key: SECRET_KEY_BASE
         generateValue: true
       - key: DATABASE_URL
